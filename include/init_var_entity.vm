@@ -1,0 +1,19 @@
+#set($recordClass    = "${entity.name}Record" )
+#set($recordInstance = $fn.uncapitalize($entity.name) )
+#set($jpaRecordClass    = "${entity.name}JpaRecord" )
+#set($jpaRecordKeyClass = "${entity.name}JpaRecordKey" )
+#set($jpaRepositoryClass = "${entity.name}Repository" )
+#set($jpaRepositoryInstance = "${recordInstance}Repository" )
+#set($jpaMapperClass    = "${entity.name}Mapper" )
+#set($jpaMapperInstance    = "${recordInstance}Mapper" )
+#set($jpaPersistenceServiceClass   = "${entity.name}PersistenceService" )
+#set($jpaPersistenceInterfaceClass   = "${entity.name}Persistence" )
+## Define keyType velocimacro
+## Resolve the primary key type
+#macro(keyType)
+#if($entity.hasCompositePrimaryKey())
+#set($keyType = ${jpaRecordKeyClass})
+#else
+#set($keyType = $entity.keyAttributes[0].wrapperType)
+#end
+#end

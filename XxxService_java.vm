@@ -1,0 +1,206 @@
+#parse("include/init_var_global.vm")
+#parse("include/init_var_entity.vm")
+#parse("include/java_header.vm")
+
+## Use macro for feed $keyType variable
+#keyType()
+import java.util.List;
+import java.util.Optional;
+
+import $recordPackage.${recordClass};
+import ${ROOT_PKG}.persistence.${jpaPersistenceInterfaceClass};
+## import ${jpaMapperPackage}.${jpaMapperClass};
+import ${jpaRecordPackage}.${jpaRecordClass};
+#if ( $entity.hasCompositePrimaryKey() )
+import ${jpaRecordPackage}.${jpaRecordKeyClass};
+#end
+import ${repositoryPackage}.${jpaRepositoryClass};
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ${jpaMapperPackage}.JpaMapper;
+import ${jpaMapperPackage}.JpaMapping;
+
+/**
+ * Spring persistence service for "${entity.name}" <br>
+ * @author Telosys (http://www.telosys.org/) version $generator.version
+ */
+@Service
+@Transactional
+public class ${jpaPersistenceServiceClass} implements ${jpaPersistenceInterfaceClass} {
+
+	@Autowired
+	private $jpaRepositoryClass ${jpaRepositoryInstance};
+	//@Autowired
+	//private ${jpaMapperClass} ${jpaMapperInstance};
+	private final JpaMapper<${jpaRecordClass},${recordClass}> mapper = JpaMapping.getMapperProvider().getMapper(${jpaRecordClass}.class,${recordClass}.class);
+
+
+	@Override
+	public ${recordClass} findById($fn.argumentsListWithWrapperType( $entity.keyAttributes )) {
+#*
+#if ($entity.hasCompositePrimaryKey())
+		// Build the composite key
+		$keyType key = new $keyType($fn.argumentsList($entity.keyAttributes));		
+		return mapper.map(${jpaRepositoryInstance}.findById(key).isPresent() ? ${jpaRepositoryInstance}.findById(key).get() : null);
+#else
+		return mapper.map(${jpaRepositoryInstance}.findById($fn.argumentsList( $entity.keyAttributes )).isPresent() ? ${jpaRepositoryInstance}.findById($fn.argumentsList( $entity.keyAttributes )).get() : null);
+#end
+*#
+#if ( $entity.hasCompositePrimaryKey() )
+		// Build the composite key
+		$primaryKeyType key = new $primaryKeyType( $fn.argumentsList( $entity.keyAttributes ) );
+		Optional<${jpaRecordClass}> optionalEntity = ${jpaRepositoryInstance}.findById(key);
+#else
+		Optional<${jpaRecordClass}> optionalEntity = ${jpaRepositoryInstance}.findById($fn.argumentsList( $entity.keyAttributes ));
+#end
+		if ( optionalEntity.isPresent() ) {
+			return mapper.mapEntityToRecord(optionalEntity.get());
+		}
+		return null ;
+
+	}
+
+	@Override
+	public List<${recordClass}> findAll() {
+		//return mapper.mapEntityToRecord(${jpaRepositoryInstance}.findAll());
+
+		List<${jpaRecordClass}> entities = ${jpaRepositoryInstance}.findAll() ;
+		List<${recordClass}> records = new java.util.LinkedList<${recordClass}>();
+		for ( ${jpaRecordClass} entity : entities ) {
+			records.add( mapper.mapEntityToRecord(entity) ) ;
+		}
+		return records ;
+
+	}
+
+	@Override
+	public long countAll() {
+		return ${jpaRepositoryInstance}.count();
+	}
+
+	@Override
+	public ${recordClass} save(${recordClass} record) {
+//		return mapper.map(${jpaRepositoryInstance}.save(mapper.map(record)));
+		${jpaRecordClass} saved = ${jpaRepositoryInstance}.save( mapper.mapRecordToEntity(record) );
+		return mapper.mapEntityToRecord(saved);
+
+	}
+
+	@Override
+	public boolean update(${recordClass} record) {
+#*
+#if ( $entity.hasCompositePrimaryKey() )
+		// Build the composite key
+		$keyType pk = new $keyType( $fn.argumentsListWithGetter( "record", $entity.keyAttributes ) );
+#else
+		$keyType pk = $fn.argumentsListWithGetter( "record", $entity.keyAttributes ) ;
+#end	
+		final Optional<${jpaRecordClass}> result = ${jpaRepositoryInstance}.findById(pk);
+		if (result.isPresent()) {
+			${jpaRepositoryInstance}.save(mapper.map(record, result.get()));
+			return true;
+		}
+*#
+		if ( exists(record) ) {
+			${jpaRepositoryInstance}.save(mapper.mapRecordToEntity(record));
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public ${recordClass} create(${recordClass} record) {
+##		return mapper.map(${jpaRepositoryInstance}.save(mapper.map(record)));
+		${jpaRecordClass} saved = ${jpaRepositoryInstance}.save( mapper.mapRecordToEntity(record) );
+		return mapper.mapEntityToRecord(saved);
+
+	}
+
+	@Override
+	public boolean deleteById($fn.argumentsListWithWrapperType( $entity.keyAttributes )) {
+#if ( $entity.hasCompositePrimaryKey() )
+		// Build the composite key
+		$keyType key = new $keyType( $fn.argumentsList( $entity.keyAttributes ) );
+		final Optional<${entity.name}JpaRecord> optinalEntity = ${jpaRepositoryInstance}.findById(key);
+#else
+		final Optional<${entity.name}JpaRecord> optinalEntity = ${jpaRepositoryInstance}.findById($fn.argumentsList( $entity.keyAttributes ));
+#end
+		if( ! optinalEntity.isPresent() ) {
+			return false;
+		}
+#*
+		try {
+#if ( $entity.hasCompositePrimaryKey() )
+			${jpaRepositoryInstance}.deleteById(key);
+#else
+			${jpaRepositoryInstance}.deleteById($fn.argumentsList( $entity.keyAttributes ));
+#end	
+			return true;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+*#
+		else {
+			${jpaRepositoryInstance}.delete(optinalEntity.get());
+			return true;
+		}
+	}
+
+	@Override
+	public boolean delete(${recordClass} record) {
+		if(record == null) {
+			return false;
+		}
+#*
+#if ( $entity.hasCompositePrimaryKey() )
+		// Build the composite key
+		$keyType key = new $keyType( $fn.argumentsListWithGetter("record", $entity.keyAttributes) );
+		final Optional<${entity.name}JpaRecord> exist = ${jpaRepositoryInstance}.findById(key);
+#else
+		final Optional<${entity.name}JpaRecord> exist = ${jpaRepositoryInstance}.findById($fn.argumentsListWithGetter("record", $entity.keyAttributes));
+#end
+		if(!exist.isPresent()) {
+			return false;
+		}
+		try {
+			${jpaRepositoryInstance}.delete(mapper.map(record));
+			return true;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+*#
+#if ( $entity.hasCompositePrimaryKey() )
+		// Build the composite key
+		$keyType key = new $keyType( $fn.argumentsListWithGetter("record", $entity.keyAttributes) );
+##		final Optional<${entity.name}JpaRecord> exist = ${jpaRepositoryInstance}.findById(key);
+		return deleteById( key );
+#else
+##		final Optional<${entity.name}JpaRecord> exist = ${jpaRepositoryInstance}.findById($fn.argumentsListWithGetter("record", $entity.keyAttributes));
+		return deleteById( $fn.argumentsListWithGetter( "record", $entity.keyAttributes ) );
+#end
+	}
+
+	@Override
+	public boolean exists($fn.argumentsListWithWrapperType( $entity.keyAttributes )) {
+#if ( $entity.hasCompositePrimaryKey() )
+		// Build the composite key
+		$keyType key = new $keyType( $fn.argumentsList( $entity.keyAttributes ) );
+		return ${jpaRepositoryInstance}.findById(key).isPresent();
+#else
+		return ${jpaRepositoryInstance}.findById($fn.argumentsList($entity.keyAttributes)).isPresent();
+#end	
+	}
+
+	@Override
+	public boolean exists(${recordClass} record) {
+#if ( $entity.hasCompositePrimaryKey() )
+		// Build the composite key
+		$keyType key = new $keyType($fn.argumentsListWithGetter("record", $entity.keyAttributes));		
+		return record == null ? false : ${jpaRepositoryInstance}.findById(key).isPresent();
+#else
+		return record == null ? false : ${jpaRepositoryInstance}.findById($fn.argumentsListWithGetter("record", $entity.keyAttributes)).isPresent();
+#end
+	}
+
+}

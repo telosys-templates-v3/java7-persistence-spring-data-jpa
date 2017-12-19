@@ -1,0 +1,26 @@
+#parse("include/init_var_global.vm")
+#parse("include/init_var_entity.vm")
+#parse("include/java_header.vm")
+
+import ${jpaRecordPackage}.${jpaRecordClass};
+#if($entity.hasCompositePrimaryKey())
+import ${jpaRecordPackage}.${jpaRecordKeyClass};
+#end
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
+## Resolve key
+#set($keyEntity = "")
+#if($entity.hasCompositePrimaryKey())
+#set($keyEntity = $jpaRecordKeyClass)
+#else
+#set($keyEntity = $entity.keyAttributes[0].wrapperType)
+#end
+
+/**
+ * Spring data Jpa repository for "${entity.name}" <br>
+ * @author Telosys (http://www.telosys.org/) version $generator.version
+ */
+@Repository
+public interface ${jpaRepositoryClass} extends JpaRepository<${jpaRecordClass}, ${keyEntity}>, JpaSpecificationExecutor<${jpaRecordClass}> {
+}

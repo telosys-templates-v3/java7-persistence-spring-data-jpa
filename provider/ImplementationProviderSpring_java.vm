@@ -1,0 +1,74 @@
+#parse("include/java_header.vm")
+
+import org.springframework.beans.BeansException;
+
+/**
+ * Utility class designed to provide the implementation of a given interface.
+ * <br>
+ * The implementation class name is determined using a "pattern" that must be
+ * given to the constructor.<br>
+ * 
+ * @author Telosys
+ *
+ */
+public class ImplementationProviderSpring {
+
+	private final String pattern;
+
+	public ImplementationProviderSpring() {
+		super();
+		this.pattern = "";
+	}
+
+	/**
+	 * Constructor <br>
+	 * 
+	 * @param pattern
+	 *            the implementation class name pattern (supposed to contain 2 "%s")
+	 *            <br>
+	 *            for example "%s.impl.jdbc.%sImpl" where <br>
+	 *            the first "%s" will be replaced by the interface package name <br>
+	 *            the second "%s" will be replaced by the interface simple class
+	 *            name <br>
+	 */
+	public ImplementationProviderSpring(String pattern) {
+		super();
+		this.pattern = pattern;
+	}
+
+	/**
+	 * Returns a service instance implementing the given interface
+	 * 
+	 * @param interfaceClass
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public final <T> T getServiceInstance(Class<T> interfaceClass) {
+		try {
+			return (T) SpringContext.getApplicationContext().getBean(resolveBeanName(interfaceClass));
+		} catch (BeansException | ClassNotFoundException | ClassCastException | IndexOutOfBoundsException e) {
+			throw new RuntimeException("Cannot load class : " + interfaceClass, e);
+		}
+	}
+
+	/**
+	 * Builds the service bean name.
+	 * 
+	 * @param interfaceClass
+	 * @return
+	 */
+	private final String resolveBeanName(Class<?> interfaceClass)
+			throws ClassNotFoundException, IndexOutOfBoundsException {
+		Package interfacePackage = interfaceClass.getPackage();
+		String interfacePackageName = interfacePackage != null ? interfacePackage.getName() : "";
+		String interfaceSimpleName = interfaceClass.getSimpleName();
+		// Resolved implementation class full name
+		String result = String.format(pattern, interfacePackageName, interfaceSimpleName);
+		// Extract class name
+		result = result.substring(result.lastIndexOf(".") + 1, result.length());
+		// Uncapitalize class name
+		result = result.substring(0, 1).toLowerCase() + result.substring(1);
+		return result;
+	}
+
+}

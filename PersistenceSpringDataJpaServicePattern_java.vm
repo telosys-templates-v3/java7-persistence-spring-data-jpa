@@ -1,0 +1,12 @@
+#parse("include/java_header.vm")
+
+/**
+ * The pattern defined here is used by the Persistence Service Provider <br>
+ * to build the service implementation class name <br>
+ * @author Telosys (http://www.telosys.org/) version $generator.version
+ */
+public class PersistenceSpringDataJpaServicePattern {
+
+	public final static String  PATTERN = "%s.impl.springdatajpa.service.%sService" ;
+	
+}

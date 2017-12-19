@@ -1,0 +1,37 @@
+#checkId($entity)
+#parse("include/init_var_entity.vm")
+#parse("include/java_header_test.vm")
+##--------------------------------------------------------------------------------------------------------
+#set( $persistenceInterface = "${entity.name}Persistence" )
+##--------------------------------------------------------------------------------------------------------
+
+import ${ROOT_PKG}.persistence.$persistenceInterface ;
+import ${ROOT_PKG}.persistence.${entity.name}PersistenceGenericTest;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+/**
+ * JUnit tests for ${entity.name} persistence service
+ * 
+ * @author Telosys Tools
+ *
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = { "classpath:applicationContextTest.xml" })
+public class ${entity.name}PersistenceJpaTest extends ${entity.name}PersistenceGenericTest {
+
+	@Autowired
+	private $persistenceInterface ${recordInstance}PersistenceService;
+
+	@Test
+	public void testPersistenceService() {
+#if ( $entity.hasAutoIncrementedKey() )
+    	testPersistenceServiceWithAutoincrementedKey(${recordInstance}PersistenceService);
+#else
+    	testPersistenceService(${recordInstance}PersistenceService);
+#end
+	}	
+}
