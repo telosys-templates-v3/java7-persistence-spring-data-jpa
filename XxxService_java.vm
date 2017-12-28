@@ -152,33 +152,16 @@ public class ${jpaPersistenceServiceClass} implements ${jpaPersistenceInterfaceC
 		if(record == null) {
 			return false;
 		}
+		return deleteById( $fn.argumentsListWithGetter( "record", $entity.keyAttributes ) );
 #*
 #if ( $entity.hasCompositePrimaryKey() )
 		// Build the composite key
 		$keyType key = new $keyType( $fn.argumentsListWithGetter("record", $entity.keyAttributes) );
-		final Optional<${entity.name}JpaRecord> exist = ${jpaRepositoryInstance}.findById(key);
-#else
-		final Optional<${entity.name}JpaRecord> exist = ${jpaRepositoryInstance}.findById($fn.argumentsListWithGetter("record", $entity.keyAttributes));
-#end
-		if(!exist.isPresent()) {
-			return false;
-		}
-		try {
-			${jpaRepositoryInstance}.delete(mapper.map(record));
-			return true;
-		} catch (IllegalArgumentException e) {
-			return false;
-		}
-*#
-#if ( $entity.hasCompositePrimaryKey() )
-		// Build the composite key
-		$keyType key = new $keyType( $fn.argumentsListWithGetter("record", $entity.keyAttributes) );
-##		final Optional<${entity.name}JpaRecord> exist = ${jpaRepositoryInstance}.findById(key);
 		return deleteById( key );
 #else
-##		final Optional<${entity.name}JpaRecord> exist = ${jpaRepositoryInstance}.findById($fn.argumentsListWithGetter("record", $entity.keyAttributes));
 		return deleteById( $fn.argumentsListWithGetter( "record", $entity.keyAttributes ) );
 #end
+*#
 	}
 
 	@Override

@@ -11,7 +11,7 @@
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 	<context:annotation-config />
-	<context:component-scan base-package="${ROOT_PKG}" />
+	<context:component-scan base-package="${componentScanBasePackage}" />
 	<jpa:repositories base-package="${repositoryPackage}" />
 
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">

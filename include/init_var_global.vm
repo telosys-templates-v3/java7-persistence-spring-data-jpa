@@ -5,4 +5,5 @@
 #set( $jpaMapperPackage      = "${ROOT_PKG}.persistence.impl.jpa.mapping" )
 #set( $jpaRecordPackage      = "${ROOT_PKG}.persistence.impl.jpa.record" )
 ##
-#set( $repositoryPackage     = "${ROOT_PKG}.persistence.impl.springdatajpa.repository" )
+#set( $repositoryPackage        = "${ROOT_PKG}.persistence.impl.springdatajpa.repository" )
+#set( $componentScanBasePackage = "${ROOT_PKG}.persistence.impl.springdatajpa" )
