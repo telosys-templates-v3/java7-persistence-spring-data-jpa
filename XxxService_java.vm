@@ -49,7 +49,7 @@ public class ${jpaPersistenceServiceClass} implements ${jpaPersistenceInterfaceC
 *#
 #if ( $entity.hasCompositePrimaryKey() )
 		// Build the composite key
-		$primaryKeyType key = new $primaryKeyType( $fn.argumentsList( $entity.keyAttributes ) );
+		$keyType key = new $keyType( $fn.argumentsList( $entity.keyAttributes ) );
 		Optional<${jpaRecordClass}> optionalEntity = ${jpaRepositoryInstance}.findById(key);
 #else
 		Optional<${jpaRecordClass}> optionalEntity = ${jpaRepositoryInstance}.findById($fn.argumentsList( $entity.keyAttributes ));
